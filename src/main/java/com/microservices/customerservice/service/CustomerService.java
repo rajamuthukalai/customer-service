@@ -4,13 +4,17 @@ import com.microservices.customerservice.exception.CustomerNotFoundException;
 import com.microservices.customerservice.model.Customer;
 import com.microservices.customerservice.respository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class CustomerService {
+
+  public static final String CUSTOMER_TOPIC = "customer";
   @Autowired private CustomerRepository repository;
+  @Autowired private KafkaTemplate<String, Customer> kafkaTemplate;
 
   public List<Customer> findAllCustomers() {
     return (List<Customer>) repository.findAll();
@@ -21,7 +25,9 @@ public class CustomerService {
   }
 
   public Customer createCustomer(Customer customer) {
-    return repository.save(customer);
+    Customer newCustomer = repository.save(customer);
+    kafkaTemplate.send(CUSTOMER_TOPIC, newCustomer);
+    return repository.save(newCustomer);
   }
 
   public Customer updateCustomer(Customer customer) throws CustomerNotFoundException {
