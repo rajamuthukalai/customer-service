@@ -26,7 +26,7 @@ public class CustomerService {
 
   public Customer createCustomer(Customer customer) {
     Customer newCustomer = repository.save(customer);
-    kafkaTemplate.send(CUSTOMER_TOPIC, newCustomer);
+    kafkaTemplate.send(CUSTOMER_TOPIC, newCustomer.getId().toString(), newCustomer);
     return repository.save(newCustomer);
   }
 
